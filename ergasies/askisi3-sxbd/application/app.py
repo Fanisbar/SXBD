@@ -18,17 +18,21 @@ def updateRank(rank1, rank2, movieTitle):
     cur=con.cursor()
 
     try:
-        float(rank1)
+        rank1 = float(rank1)
+        rank2 = float(rank2)
     except ValueError:
         return [("status",),("error",),]
     try:
-        float(rank2)
-    except ValueError:
-        return [("status",),("error",),]
-
-    print (rank1, rank2, movieTitle)
-
-    return [("status",),("ok",),]
+        sql = """UPDATE movies SET rank1 = %s, rank2 = %s WHERE title = %s"""
+        cur.execute(sql, (rank1, rank2, movieTitle))
+        con.commit()
+        return [("status",), ("ok",),]
+    except Exception as e:
+        con.rollback()
+        return [("status",), ("error", str(e)),]
+    finally:
+        cur.close()
+        con.close()
 
 
 def colleaguesOfColleagues(actorId1, actorId2):
