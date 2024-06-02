@@ -43,7 +43,7 @@ def actorPairs():
     return "<html><body>" + renderTable(table) + "</body></html>"
 	
 @route('/selectTopNactors')
-def ():
+def idk():
     n = request.query.n
     table = app.selectTopNactors(n)
     return "<html><body>" + renderTable(table) + "</body></html>"
