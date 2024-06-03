@@ -23,7 +23,7 @@ def updateRank(rank1, rank2, movieTitle):
             return [("status",), ("error",),]
         
         # Check if the movie exists
-        cur.execute("SELECT rank FROM movie WHERE title = %s", (movieTitle,))
+        cur.execute("SELECT m.`rank` FROM movie m WHERE title = %s", (movieTitle,))
         results = cur.fetchall()
 
         if len(results) == 0:
@@ -40,7 +40,7 @@ def updateRank(rank1, rank2, movieTitle):
             new_rank = (current_rank + rank1 + rank2) / 3
         
         # Update the rank in the database
-        cur.execute("UPDATE movie SET rank = %s WHERE title = %s", (new_rank, movieTitle))
+        cur.execute("UPDATE movie SET `rank` = %s WHERE title = %s", (new_rank, movieTitle))
         con.commit()
         return [("status",), ("ok",),]
     
