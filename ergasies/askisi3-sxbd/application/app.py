@@ -16,11 +16,21 @@ def updateRank(rank1, rank2, movieTitle):
 
     try:
         # Validate inputs
-        rank1 = float(rank1)
-        rank2 = float(rank2)
+        try:
+            rank1 = float(rank1)
+        except:
+            return [("status",), ("error", "Rank1 must be a double from 0 to 10"),]
         
-        if not (0 <= rank1 <= 10) or not (0 <= rank2 <= 10):
-            return [("status",), ("error",),]
+        try:
+            rank2 = float(rank2)
+        except:
+            return [("status",), ("error", "Rank2 must be a double from 0 to 10"),]
+        
+        if not (0 <= rank1 <= 10):
+            return [("status",), ("error", "Rank1 must be a double from 0 to 10"),]
+        
+        if not (0 <= rank2 <= 10):
+            return [("status",), ("error", "Rank2 must be a double from 0 to 10"),]
         
         # Check if the movie exists
         cur.execute("SELECT m.`rank` FROM movie m WHERE title = %s", (movieTitle,))
