@@ -169,17 +169,59 @@ def colleaguesOfColleagues(actorId1, actorId2):
         con.close()
         return final
 
-def actorPairs(actorId):
 
+def selectTopNactors(N):
     # Create a new connection
-    con=connection()
+    con = connection()
 
     # Create a cursor on the connection
-    cur=con.cursor()
+    cur = con.cursor()
 
-    print (actorId)
+    result = [("Genre", "Actor ID", "Movie Count")]
 
-    return [("actorId",),]
+    try:
+        # Get all genres
+        cur.execute("SELECT genre_id, genre_name FROM genre;")
+        genres = cur.fetchall()
+
+        for genre_tuple in genres:
+            genre_id, genre_name = genre_tuple
+
+            # Get all movie_ids for the current genre
+            cur.execute("SELECT movie_id FROM movie_has_genre WHERE genre_id = %s", (genre_id,))
+            movie_ids = cur.fetchall()
+
+            actor_count = {}
+
+            for movie_id_tuple in movie_ids:
+                movie_id1 = movie_id_tuple[0]
+
+                # Get all actor_ids for the current movie
+                cur.execute("SELECT actor_id FROM role WHERE movie_id = %s", (movie_id1,))
+                actors = cur.fetchall()
+
+                for actor_tuple in actors:
+                    actor_id = actor_tuple[0]
+                    if actor_id in actor_count:
+                        actor_count[actor_id] += 1
+                    else:
+                        actor_count[actor_id] = 1
+
+            # Sort actors by movie count and get the top N actors
+            sorted_actors = sorted(actor_count.items(), key=lambda item: item[1], reverse=True)
+            top_actors = sorted_actors[:N]
+
+            for actor in top_actors:
+                result.append((genre_name, actor[0], actor[1]))
+
+    except con.Error as err:
+        print(f"Error: {err}")
+    finally:
+        cur.close()
+        con.close()
+
+    return result
+
 
 def selectTopNactors(n):
 
