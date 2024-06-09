@@ -170,12 +170,15 @@ def colleaguesOfColleagues(actorId1, actorId2):
         return final
 
 
-def selectTopNactors(N):
+
+
+def selectTopNactors(n):
+
     # Create a new connection
-    con = connection()
+    con=connection()
 
     # Create a cursor on the connection
-    cur = con.cursor()
+    cur=con.cursor()
 
     result = [("Genre", "Actor ID", "Movie Count")]
 
@@ -209,7 +212,7 @@ def selectTopNactors(N):
 
             # Sort actors by movie count and get the top N actors
             sorted_actors = sorted(actor_count.items(), key=lambda item: item[1], reverse=True)
-            top_actors = sorted_actors[:N]
+            top_actors = sorted_actors[:n]
 
             for actor in top_actors:
                 result.append((genre_name, actor[0], actor[1]))
@@ -220,20 +223,9 @@ def selectTopNactors(N):
         cur.close()
         con.close()
 
+    print (n)
     return result
 
-
-def selectTopNactors(n):
-
-    # Create a new connection
-    con=connection()
-
-    # Create a cursor on the connection
-    cur=con.cursor()
-
-    print (n)
-
-    return [("genreName", "actorId", "numberOfMovies"),]
 
 def traceActorInfluence(actorId):
     # Create a new connection
