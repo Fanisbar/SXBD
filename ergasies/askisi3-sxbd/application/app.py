@@ -5,7 +5,7 @@ import pymysql
 
 def connection():
     ''' User this function to create your connections '''    
-    con = pymysql.connect(host='127.0.0.1', port=3306, user='', passwd='', db='movies') #update with your settings
+    con = pymysql.connect(host='127.0.0.1', port=3306, user='root', passwd='srootpwd@271', db='movies') #update with your settings
     
     return con
 
