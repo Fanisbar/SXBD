@@ -307,7 +307,7 @@ def selectTopNactors(n):
 
     try:
         # Get all genres
-        cur.execute("SELECT genre_id, genre_name FROM genre;")
+        cur.execute("SELECT genre_id, genre_name FROM genre ORDER BY genre_name;")
         genres = cur.fetchall()
 
         for genre_tuple in genres:
