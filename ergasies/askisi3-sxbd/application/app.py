@@ -170,6 +170,129 @@ def colleaguesOfColleagues(actorId1, actorId2):
         return final
 
 
+def actorPairs(actorId):
+
+    # Create a new connection
+    con=connection()
+
+    # Create a cursor on the connection
+    cur=con.cursor()
+
+    #Check if the actor id exists
+    cur.execute("SELECT a.`actor_id` FROM actor a WHERE a.actor_id = %s", actorId)
+    results = cur.fetchall()
+    if len(results) == 0:
+        return [("status",), ("error", "Actor Id does not exist"),]
+
+    #Find colleagues of actorId
+    cur.execute("""SELECT DISTINCT
+                        r1.actor_id
+                    FROM
+                        movie m,
+                        role r1,
+                        role r2
+                    WHERE
+                        r2.actor_id = %s
+                        AND r2.movie_id = m.movie_id
+                        AND r1.movie_id = m.movie_id
+                        AND r1.actor_id != r2.actor_id;""", actorId)
+    results = cur.fetchall()
+
+    colleagues = []
+    for row in results:
+        colleagues.append(row[0])
+    
+    #Find which colleagues have played in at least 7 genres with the actor id
+    approved_colleagues = []
+    for coll in colleagues:
+        cur.execute("""SELECT DISTINCT
+                            mg.genre_id
+                        FROM
+                            movie m,
+                            role r1,
+                            role r2,
+                            movie_has_genre mg
+                        WHERE
+                            r1.actor_id = %s
+                            AND r2.actor_id = %s
+                            AND m.movie_id = r1.movie_id
+                            AND m.movie_id = r2.movie_id
+                            AND m.movie_id = mg.movie_id;""", (actorId, coll))
+        results = cur.fetchall()
+        if len(results) >= 7:
+            approved_colleagues.append(coll)
+    
+    #Find which of the approved colleagues have played only in different genres when they
+    #are not in the same movie as actor id
+    final_colleagues = []
+    for coll in approved_colleagues:
+
+        #Find actor id's genres without coll
+        actorId_genres = []
+        cur.execute("""SELECT DISTINCT
+                            mg.genre_id
+                        FROM
+                            movie m,
+                            role r,
+                            movie_has_genre mg
+                        WHERE
+                            r.actor_id = %s
+                                AND m.movie_id = r.movie_id
+                                AND m.movie_id = mg.movie_id
+                                AND m.movie_id NOT IN (SELECT 
+                                    m.movie_id
+                                FROM
+                                    movie m,
+                                    role r
+                                WHERE
+                                    m.movie_id = r.movie_id
+                                    AND r.actor_id = %s);""", (actorId, coll))
+        results = cur.fetchall()
+        for row in results:
+            actorId_genres.append(row[0])
+
+        #Find the colleague's genres without actorId
+        coll_genres = []
+        cur.execute("""SELECT DISTINCT
+                            mg.genre_id
+                        FROM
+                            movie m,
+                            role r,
+                            movie_has_genre mg
+                        WHERE
+                            r.actor_id = %s
+                                AND m.movie_id = r.movie_id
+                                AND m.movie_id = mg.movie_id
+                                AND m.movie_id NOT IN (SELECT 
+                                    m.movie_id
+                                FROM
+                                    movie m,
+                                    role r
+                                WHERE
+                                    m.movie_id = r.movie_id
+                                    AND r.actor_id = %s);""", (coll, actorId))
+        results = cur.fetchall()
+        for row in results:
+            coll_genres.append(row[0])
+        
+        inFinal = True
+        for genre in actorId_genres:
+            if genre in coll_genres:
+                inFinal = False
+        
+        if inFinal:
+            final_colleagues.append(coll)
+
+    #Return final results
+    final = [("actorId",)]
+    for coll in final_colleagues:
+        final.append((coll,))
+    
+    if len(final) == 1:
+        return [("status",), ("error", "Didn't find any actor pairs"),]
+
+    return final
+
 
 
 def selectTopNactors(n):
@@ -212,7 +335,8 @@ def selectTopNactors(n):
 
             # Sort actors by movie count and get the top N actors
             sorted_actors = sorted(actor_count.items(), key=lambda item: item[1], reverse=True)
-            top_actors = sorted_actors[:n]
+            x = int(n)
+            top_actors = sorted_actors[:x]
 
             for actor in top_actors:
                 result.append((genre_name, actor[0], actor[1]))
